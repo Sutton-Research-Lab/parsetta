@@ -35,8 +35,7 @@ setup(
     keywords='',
     packages=find_packages(exclude=['docs', 'tests*']),
     include_package_data=True,
-    author='R. Patrick Xian',
+    author='R. Patrick Xian, Christopher Sutton',
     install_requires=install_requires,
-    dependency_links=dependency_links,
-    author_email='xrpatrick@gmail.com'
+    dependency_links=dependency_links
 )
