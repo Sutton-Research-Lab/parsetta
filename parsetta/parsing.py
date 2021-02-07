@@ -7,7 +7,7 @@ import nested_lookup as nl
 
 
 class MatParser(object):
-    """ Parser class for materials data
+    """ Parser class for ``pymatgen`` materials data.
     """
     
     def __init__(self, matdict):
@@ -21,7 +21,7 @@ class MatParser(object):
         return len(self.matforms)
     
     def retrieve(self, prop, mat='all', cond=None):
-        """ Retrieve material by property.
+        """ Retrieve and rank materials by property.
         
         **Parameters**\n
         prop: str
@@ -31,7 +31,6 @@ class MatParser(object):
         cond: str | None
             Condition to filter the data according to property ('max' or 'min').
         """
-            
         
         if mat == 'all':
             matforms = self.matforms
