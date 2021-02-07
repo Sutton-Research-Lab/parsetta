@@ -4,6 +4,7 @@
 import numpy as np
 from glom import glom
 import nested_lookup as nl
+from pprint import pprint
 
 
 class MatParser(object):
@@ -20,7 +21,7 @@ class MatParser(object):
         
         return len(self.matforms)
     
-    def retrieve(self, prop, mat='all', cond=None):
+    def retrieve(self, prop, mat='all', cond=None, ret=True, keep=False):
         """ Retrieve and rank materials by property.
         
         **Parameters**\n
@@ -56,4 +57,13 @@ class MatParser(object):
             
             retdict[mf] = propdict
             
-        return retdict
+        if ret:
+            return retdict
+        if keep:
+            self.retdict = retdict
+
+    def display(self, content):
+        """ Display file structure in pretty print.
+        """
+
+        pprint(content)
