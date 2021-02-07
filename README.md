@@ -1,2 +1,2 @@
 # parsetta
-Collection of data parsers and utilities
+Collection of data parsers and utilities functions
