@@ -1,5 +1,3 @@
 glom
 nested-lookup
-json
-pprint
 mendeleev

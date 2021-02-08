@@ -4,7 +4,10 @@
 import numpy as np
 from glom import glom
 import nested_lookup as nl
-from pprint import pprint
+try:
+    from pprint import pprint
+except:
+    pass
 
 
 class MatParser(object):
