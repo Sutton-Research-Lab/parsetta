@@ -11,7 +11,7 @@ except:
 
 
 class MatParser(object):
-    """ Parser class for ``pymatgen`` materials data.
+    """ Parser class for ``pymatgen`` materials data structure.
     """
     
     def __init__(self, matdict):
