@@ -34,8 +34,8 @@ class MatParser(object):
             List of materials compositions (in formula). Input 'all' indicates all materials.
         struct: str | None
             Type of structure to retrieve ('dft_structure', 'spuds_structure', etc), ``None`` for no structure.
-        cond: str | None
-            Condition to filter the data according to property ('max' or 'min').
+        cond: str/int | None
+            Condition to filter the data according to property ('max', 'min', or an non-negative integer as the ranking).
         ret: bool | True
             Option to return the retrieved structures directly.
         keep: bool | False
@@ -56,16 +56,25 @@ class MatParser(object):
             propvals = nl.nested_lookup(prop, self.matdict[mf])
             
             if cond is not None:
+                # Retrieve the structure with the lowest property value
                 if cond == 'min':
                     idx = np.argmin(propvals)
+                # Retrieve the structure with the highest property value
                 elif cond == 'max':
                     idx = np.argmax(propvals)
+                # Retrieve the structure with the property value ranked at the place cond
+                elif isinstance(cond, int):
+                    idx = np.argsort(propvals)[cond]
+                else:
+                    raise NotImplementedError
+                
                 if struct is not None:
                     struct_str = '{}.{}'.format(tiltnames[idx], struct)
                     struct_selected = glom(tiltdict, struct_str)
                     propdict = {'tilt':tiltnames[idx], prop: propvals[idx], struct: struct_selected}
                 else:
                     propdict = {'tilt':tiltnames[idx], prop: propvals[idx]}    
+            
             else:
                 propdict = dict(zip(tiltnames, propvals))
             
