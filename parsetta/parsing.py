@@ -25,8 +25,8 @@ class MatParser(object):
         
         return len(self.matforms)
         
-    def retrieve(self, prop, mat='all', struct=None, cond=None, ret=True, keep=False):
-        """ Retrieve material structure by property.
+    def retrieve(self, prop, mat='all', struct=None, all_info=False, cond=None, ret=True, keep=False):
+        """ Retrieve material information by quantitative ranking of property.
         
         **Parameters**\n
         prop: str
@@ -35,12 +35,14 @@ class MatParser(object):
             List of materials compositions (in formula). Input 'all' indicates all materials.
         struct: str | None
             Type of structure to retrieve ('dft_structure', 'spuds_structure', etc), ``None`` for no structure.
+        all_info: bool | False
+            Option to include all information (structures and properties) available for selected material.
         cond: str/int | None
             Condition to filter the data according to property ('max', 'min', or an non-negative integer as the ranking).
         ret: bool | True
             Option to return the retrieved structures directly.
         keep: bool | False
-            Option to keep the retrieved structure as an attribute.
+            Option to keep the retrieved structure as an attribute of the instantiated class.
         """
         
         if mat == 'all':
@@ -52,11 +54,14 @@ class MatParser(object):
         for mf in matforms:
             
             res_str = '{}.results'.format(mf)
+            # Retrieve all tilts for a material (dictionary keys are '#_tilt', with # being an integer)
             tiltdict = glom(self.matdict, res_str)
             tiltnames = list(tiltdict.keys())
             propvals = nl.nested_lookup(prop, self.matdict[mf])
             
             if cond is not None:
+                
+                # Select the structures according to property ranking
                 # Retrieve the structure with the lowest property value
                 if cond == 'min':
                     idx = np.argmin(propvals)
@@ -69,12 +74,20 @@ class MatParser(object):
                 else:
                     raise NotImplementedError
                 
-                if struct is not None:
+                # Aggregate outcome after property ranking
+                # Outcome with all information (and related structures)
+                if all_info:
+                    propdict = {'tilt':tiltnames[idx]}
+                    propdict.update(tiltdict[tiltnames[idx]])
+                # Outcome with only single structure and corresponding property information
+                elif struct is not None:
+                    propdict = {'tilt':tiltnames[idx], prop: propvals[idx]}
                     struct_str = '{}.{}'.format(tiltnames[idx], struct)
                     struct_selected = glom(tiltdict, struct_str)
                     propdict = {'tilt':tiltnames[idx], prop: propvals[idx], struct: struct_selected}
+                # Outcome with only property information
                 else:
-                    propdict = {'tilt':tiltnames[idx], prop: propvals[idx]}    
+                    propdict = {'tilt':tiltnames[idx], prop: propvals[idx]}
             
             else:
                 propdict = dict(zip(tiltnames, propvals))
@@ -101,13 +114,13 @@ class MatFilter(object):
         
         self.materials = MatParser(matdata)
     
-    def select_reference(self, prop='FE_at', cond='max', struct='dft_structure'):
+    def select_reference(self, prop='FE_at', cond='max', struct='dft_structure', **kwargs):
         """ Select reference structures.
         """
         
         self.prop = prop
         self.struct = struct
-        self.matref = self.materials.retrieve(prop, cond=cond, struct=struct)
+        self.matref = self.materials.retrieve(prop, cond=cond, struct=struct, **kwargs)
     
     def filter_duplicate(self, prop='FE_at', conds=[2], rtol=1e-2, **kwargs):
         """ Filter duplicate structures.
