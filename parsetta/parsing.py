@@ -25,7 +25,7 @@ class MatParser(object):
         
         return len(self.matforms)
         
-    def retrieve(self, prop, mat='all', struct=None, all_info=False, cond=None, ret=True, keep=False):
+    def retrieve(self, prop, mat='all', struct=None, polymorph_info=False, chem_info=False, cond=None, ret=True, keep=False):
         """ Retrieve material information by quantitative ranking of property.
         
         **Parameters**\n
@@ -35,8 +35,10 @@ class MatParser(object):
             List of materials compositions (in formula). Input 'all' indicates all materials.
         struct: str | None
             Type of structure to retrieve ('dft_structure', 'spuds_structure', etc), ``None`` for no structure.
-        all_info: bool | False
-            Option to include all information (structures and properties) available for selected material.
+        polymorph_info: bool | False
+            Option to include all polymorph-dependent information (structures and properties) available for selected material.
+        chem_info: bool | False
+            Option to include the chemical information for the selected material (same for all polymorphs).
         cond: str/int | None
             Condition to filter the data according to property ('max', 'min', or an non-negative integer as the ranking).
         ret: bool | True
@@ -53,6 +55,10 @@ class MatParser(object):
         retdict = {}
         for mf in matforms:
             
+            # Retrieve chemical information
+            chemdict = self.matdict[mf].copy()
+            chemdict.pop('results')
+
             res_str = '{}.results'.format(mf)
             # Retrieve all tilts for a material (dictionary keys are '#_tilt', with # being an integer)
             tiltdict = glom(self.matdict, res_str)
@@ -76,7 +82,7 @@ class MatParser(object):
                 
                 # Aggregate outcome after property ranking
                 # Outcome with all information (and related structures)
-                if all_info:
+                if polymorph_info:
                     propdict = {'tilt':tiltnames[idx]}
                     propdict.update(tiltdict[tiltnames[idx]])
                 # Outcome with only single structure and corresponding property information
@@ -91,6 +97,9 @@ class MatParser(object):
             
             else:
                 propdict = dict(zip(tiltnames, propvals))
+
+            if chem_info:
+                propdict.update(chemdict)
             
             retdict[mf] = propdict
             
