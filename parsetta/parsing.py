@@ -24,6 +24,44 @@ class MatParser(object):
     def nmat(self):
         
         return len(self.matforms)
+
+    def retrieve_tilt(self, tilt_num, mat='all', ret=True, keep=False):
+        """ Retrieve materials data with a particular tilt setting.
+
+        **Parameters**\n
+        tilt_num: int
+            Integer number for the tilt setting.
+        """
+        
+        if mat == 'all':
+            matforms = self.matforms
+        else:
+            matforms = mat
+        
+        # Retrieve all materials information with designated single tilts
+        single_tilt_dict = {}
+        for mf in matforms:
+
+            # Retrieve chemical information for a material
+            chemdict = self.matdict[mf].copy()
+            chemdict.pop('results')
+
+            res_str = '{}.results'.format(mf)
+            # Retrieve all tilts for a material (dictionary keys are '#_tilt', with # being an integer)
+            tiltdict = glom(self.matdict, res_str)
+            tiltnames = list(tiltdict.keys())
+            tilt = '{}_tilt'.format(tilt_num)
+            if tilt in tiltnames:
+                chemdict[tilt] = tiltdict[tilt]
+            else:
+                pass
+
+            single_tilt_dict.update({mf: chemdict})
+            
+        if ret:
+            return single_tilt_dict
+        if keep:
+            self.single_tilt_dict = single_tilt_dict
         
     def retrieve(self, prop, mat='all', struct=None, polymorph_info=False, chem_info=False, cond=None, ret=True, keep=False):
         """ Retrieve material information by quantitative ranking of property.
@@ -55,7 +93,7 @@ class MatParser(object):
         retdict = {}
         for mf in matforms:
             
-            # Retrieve chemical information
+            # Retrieve chemical information for a material
             chemdict = self.matdict[mf].copy()
             chemdict.pop('results')
 
@@ -142,7 +180,7 @@ class MatFilter(object):
             othermats = {}
             others = self.materials.retrieve(prop, cond=cd, struct=struct)
         
-            for (otherform, otherinfo), (refform, refinfo) in zip(self.matref.items(), others.items()):
+            for (refform, refinfo), (otherform, otherinfo) in zip(self.matref.items(), others.items()):
                 if not np.allclose(otherinfo[prop], refinfo[prop], rtol=rtol):
                     othermats[otherform] = otherinfo
         
